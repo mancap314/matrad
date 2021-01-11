@@ -1,4 +1,4 @@
-from utils import call_api, get_current_timestamp, get_hashmap_signature, execute_query, get_urls_speeds
+from matrad.utils import call_api, get_current_timestamp, get_hashmap_signature, execute_query, get_urls_speeds
 
 
 # Check if timestamps are synced between local and Binance server

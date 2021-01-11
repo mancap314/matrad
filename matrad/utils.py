@@ -1,7 +1,7 @@
 import json, time, hmac, hashlib
 from typing import Dict, List
 from os.path import expanduser, join
-from properties import req_mapping, endpoint_mapping, pair_list_path, urls
+from .properties import req_mapping, endpoint_mapping, pair_list_path, urls
 
 
 def get_current_timestamp() -> int:
