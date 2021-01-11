@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="matrad", # Replace with your own username
-    version="0.0.4",
+    version="0.0.5",
     author="Manuel Capel",
     author_email="manuel.capel82@gmail.com",
     description="A Python interface to the Binance API",
