@@ -4,8 +4,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="matrad-pkg-mancap314", # Replace with your own username
-    version="0.0.1",
+    name="matrad", # Replace with your own username
+    version="0.0.3",
     author="Manuel Capel",
     author_email="manuel.capel82@gmail.com",
     description="A Python interface to the Binance API",
