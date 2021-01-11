@@ -1,6 +1,0 @@
-README.md
-setup.py
-matrad_pkg_mancap314.egg-info/PKG-INFO
-matrad_pkg_mancap314.egg-info/SOURCES.txt
-matrad_pkg_mancap314.egg-info/dependency_links.txt
-matrad_pkg_mancap314.egg-info/top_level.txt
