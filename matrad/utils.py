@@ -1,5 +1,5 @@
 import json, time, hmac, hashlib
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from os.path import expanduser, join
 from .properties import req_mapping, endpoint_mapping, pair_list_path, urls
 
@@ -41,24 +41,25 @@ def get_query_string(params: Dict) -> str:
     return '&'.join([f'{k}={v}' for k, v in params.items()])
 
 
-def get_hashmap_signature(params: Dict, data: Dict = {}) -> str:
+def get_hashmap_signature(params: Dict, data: Dict = {}, secret_key: Tuple[str, None] = None) -> str:
     """Compute HMAC SHA256 signature for the arguments given in the query string and request body
     See: https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#signed-endpoint-examples-for-post-apiv3order
     Args:
         params (Dict): Query string key-value pairs
         data (Dict, optional): Request body key-value pairs
+        secret_key (str, optional): Your personal Binance API secret
 
     Returns:
         str: signature expected by the Binance API
     """
     msg = get_query_string(params) + get_query_string(data)
-    secret_key = get_api_key(secret=True)
+    secret_key = get_api_key(secret=True) if secret_key is None else secret_key
     signature = hmac.new(secret_key.encode('utf-8'), msg.encode('utf-8'), hashlib.sha256).hexdigest()
     return signature
 
 
-def call_api(url: str = 'https://api.binance.com', endpoint: str = '', method: str = 'GET', 
-                params: Dict = {}, data: Dict = {}, signature_required: bool = False, raw: bool = False) -> Dict:
+def call_api(url: str = 'https://api.binance.com', endpoint: str = '', method: str = 'GET', params: Dict = {}, data: Dict = {}, 
+            signature_required: bool = False, raw: bool = False, key: Tuple[str, None] = None, secret_key: Tuple[str, None] = None) -> Dict:
     """ Query the Binance API to the specified `url` at the given `endpoint` with the corresponding `method`.
     If there is an error, it will return a corresponding Dict up to the caller to handle. 
     Args:
@@ -69,13 +70,16 @@ def call_api(url: str = 'https://api.binance.com', endpoint: str = '', method: s
         data (Dict, optional): Parameters corresponding to the request body. Defaults to {}.
         signature_required (bool, optional): If the function called requires a signature or not. Defaults to False.
         raw (bool, optional): If to return the result raw result (True) or as a Dict (False). Defaults to False.
+        key (str, optional): Your personal Binance API public key
+        secret_key (str, optional): Your personal Binance API secret
 
     Returns:
         Dict: either the result of the function (API response) or the error it generated
     """
-    headers = {'Content-Type': 'application/json;charset=utf-8', 'X-MBX-APIKEY': get_api_key(secret=False)}
+    key = get_api_key(secret=False) if key is None else key
+    headers = {'Content-Type': 'application/json;charset=utf-8', 'X-MBX-APIKEY': key}
     if signature_required:
-        signature = get_hashmap_signature(params, data)
+        signature = get_hashmap_signature(params, data, secret_key)
         params['signature'] = signature
     req = req_mapping.get(method)
     if req is None:
@@ -91,8 +95,8 @@ def call_api(url: str = 'https://api.binance.com', endpoint: str = '', method: s
     return response
 
 
-def execute_query(name: str, params: Dict = {}, data: Dict = {}, 
-                    url: str = 'https://api.binance.com', raw: bool = False) -> Dict: 
+def execute_query(name: str, params: Dict = {}, data: Dict = {}, url: str = 'https://api.binance.com', 
+                    raw: bool = False, key: Tuple[str, None] = None, secret_key: Tuple[str, None] = None) -> Dict: 
     """Execute query to the Binance API given its name as defined in `endpoint_mapping` in properties.py.
     It basically wraps `call_api()`.
 
@@ -102,6 +106,8 @@ def execute_query(name: str, params: Dict = {}, data: Dict = {},
         data (Dict, optional): Parameters corresponding to the request body. Defaults to {}.
         url (str, optional): Corresponds to the request body for the query. Defaults to 'https://api.binance.com'.
         raw (bool, optional): If to return the response in raw form (True) or as Dict (False). Defaults to False.
+        key (str, optional): Your personal Binance API public key
+        secret_key (str, optional): Your personal Binance API secret
 
     Returns:
         Dict: either the result of the function (API response) or the error it generated
@@ -114,7 +120,7 @@ def execute_query(name: str, params: Dict = {}, data: Dict = {},
         return {}
     endpoint, method, signature_required = props.get('endpoint'), props.get('method'), props.get('signature_required')
     response = call_api(url=url, endpoint=endpoint, method=method, params=params, data=data, 
-                        signature_required=signature_required, raw=raw)
+                        signature_required=signature_required, raw=raw, key=key, secret_key=secret_key)
     return response
     
 
@@ -156,6 +162,3 @@ def get_urls_speeds() -> Dict:
         duration = response.elapsed.total_seconds()
         urls_speeds[url] = duration
     return urls_speeds
-
-
-
